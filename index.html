@@ -1,0 +1,131 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI編集部｜AI指示文ライブラリ</title><style>
+:root{--p:#e8739c;--ink:#26313a;--bg:#fffaf7;--line:#eee4df}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink)}header{text-align:center;padding:34px 18px 22px;background:linear-gradient(135deg,#fff3f7,#fffdf8)}h1{margin:0;font-size:28px;letter-spacing:.08em}header p{color:#777}.wrap{max-width:900px;margin:auto;padding:18px}.search{width:100%;padding:15px;border:1px solid var(--line);border-radius:18px;font-size:16px}.tabs{display:flex;gap:8px;overflow:auto;padding:15px 0}.tab{white-space:nowrap;border:0;border-radius:20px;padding:10px 14px;font-weight:700}.active{background:var(--p);color:#fff}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.card{background:white;border:1px solid var(--line);border-radius:19px;padding:16px;box-shadow:0 5px 16px #5030100a;cursor:pointer}.card h3{margin:8px 0;font-size:17px}.card p{margin:0;color:#6e7479;font-size:13px;line-height:1.55}.badge{display:inline-block;padding:5px 8px;border-radius:10px;background:#f8e5ed;color:#b44d75;font-size:11px;font-weight:800}.short{background:#eee8ff;color:#704bb0}.detail{display:none;position:fixed;inset:0;z-index:9;background:var(--bg);overflow:auto}.detail.on{display:block}.inner{max-width:720px;margin:auto;padding:18px}.back{border:0;background:none;font-size:30px}.prompt{white-space:pre-wrap;background:white;border:1px solid var(--line);border-radius:18px;padding:18px;line-height:1.75;font-size:14px}.copy{width:100%;border:0;border-radius:16px;padding:15px;background:linear-gradient(90deg,#e8739c,#d8508c);color:#fff;font-weight:800;font-size:16px;margin:12px 0}.tip{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;line-height:1.6}.note{font-size:12px;color:#777;line-height:1.6;margin-top:22px}@media(max-width:620px){.grid{grid-template-columns:1fr}}
+</style></head><body><header><h1>AI編集部<br>AI指示文ライブラリ</h1><p>やりたいことを選ぶだけ。コピペですぐ使える。</p></header><main class="wrap"><input id="q" class="search" placeholder="🔎 メール、資料、note など"><div id="tabs" class="tabs"></div><h2>おすすめの指示文 <small id="count"></small></h2><div id="grid" class="grid"></div><p class="note">※ AI編集部 SHORTSはAI編集部独自のショート指示です。ChatGPTやClaudeの公式コマンドではありません。公式機能を掲載する場合は一次情報と確認日を明記します。</p></main><div id="detail" class="detail"><div class="inner"><button class="back" onclick="closeD()">‹</button><div id="body"></div></div></div><script>
+const A=[
+['仕事','社内向け説得力あるスライド構成を作る','企画や提案を、決裁者が判断しやすい構成に整理します。',`あなたはBtoB企業の経営企画・事業戦略コンサルタントです。
+
+以下の【提案内容】について、社内の意思決定者を説得するためのプレゼンテーション構成を作成してください。
+
+【提案内容】
+ここに今回の企画や提案内容を入力
+
+【条件】
+・5〜6枚のスライド構成
+・現状→課題→解決策→期待される効果→実行ステップの順で整理
+・各スライドのタイトル、要点、図表のアイデアを示す
+・可能な限り定量的なデータや根拠を入れる
+・決裁者が判断すべきポイントを明確にする`,'【提案内容】だけ自分の内容に書き換えればOK。'],
+['仕事','上司へのメールを丁寧に作る','メモを簡潔で判断しやすい上司向けメールにします。',`以下の内容を、上司に送るビジネスメールに整えてください。
+
+【元の内容】
+ここにメモを貼る
+
+【条件】
+・結論を先にする
+・事実と自分の意見を分ける
+・必要な数字や期限を落とさない
+・何を確認・判断してほしいか明確にする
+・丁寧だが冗長にしない
+・件名案も1つ付ける`,'箇条書きのメモでもOK。'],
+['仕事','部下への返信をやわらかく整える','指示は明確にしつつ、きつく見えない文章にします。',`以下の内容を部下への返信文にしてください。
+
+【伝えたいこと】
+ここに内容を入力
+
+【条件】
+・必要に応じて感謝を入れる
+・判断や指示は曖昧にしない
+・上から目線になりすぎない
+・改善が必要なら理由も短く添える
+・社内メールとして自然な長さにする`,'伝えたいことをそのまま貼ればOK。'],
+['仕事','会議内容を3行で要約する','結論・未決事項・次のアクションを抽出します。',`以下の会議メモを3つに整理してください。
+1. 結論・決まったこと
+2. 未決事項・確認が必要なこと
+3. 次のアクション（担当・期限があれば明記）
+
+【会議メモ】
+ここに貼り付け
+
+推測で補完せず、確認できない事項は「確認できません」としてください。`,'会議メモや文字起こしを貼ります。'],
+['仕事','判断に迷う案件を整理する','事実・不足情報・リスク・選択肢に分解します。',`以下の案件について、結論を急がず判断材料を整理してください。
+
+【案件】
+ここに状況を入力
+
+【出力】
+①確認できる事実
+②私の意見・仮説
+③不足している情報
+④想定されるリスク
+⑤考えられる選択肢
+⑥各選択肢のメリット・デメリット
+⑦確認すべき質問
+⑧次に取るべき行動
+
+私の考えに迎合せず、論理的に弱い部分があれば指摘してください。`,'重要な判断前の整理用。'],
+['子育て・学習','子どもの課題からレポート構成を作る','答えを代筆せず、自分で書ける構成を作ります。',`以下の学校課題について、子どもが自分で考えて書けるレポート構成を作ってください。
+
+【学年】ここに入力
+【課題】ここに入力
+
+答えを完成させるのではなく、見出し、考えるための質問、調べるポイント、まとめ方の例を示してください。学年に合った言葉を使ってください。`,'学年と課題を入れます。'],
+['子育て・学習','教材から15分復習プリントを作る β','短時間で取り組める問題構成を作ります。',`以下の教材内容から、15分程度で解ける復習プリント案を作成してください。
+
+【教材内容】
+ここに入力
+
+【条件】
+・今回の範囲を約8割、過去の復習を約2割
+・基礎→確認→少し考える問題の順
+・問題と解答を分ける
+・教材にない事実を勝手に追加しない
+・不足情報は確認できないと明記する`,'画像教材は読み取り精度を必ず確認してください。'],
+['副業・SNS','実体験からnote記事の下書きを作る','出来事や気づきを読みやすい記事にします。',`以下の実体験メモからnote記事の下書きを作ってください。
+
+【メモ】
+ここに出来事・感想を入力
+
+【条件】
+・体験→気づき→読者が持ち帰れること、の流れ
+・体験していないことを創作しない
+・過度に成功談にしない
+・自然な一人称
+・タイトル案を5案
+・見出しを入れてスマホで読みやすくする`,'箇条書きでもOK。'],
+['副業・SNS','今日の出来事からnoteネタを5本出す','日常の小さな気づきも記事候補にします。',`以下の今日の出来事から、noteの記事ネタを5つ提案してください。
+
+【今日の出来事】
+ここに入力
+
+各案について「タイトル案」「読者が共感しそうなポイント」「記事の切り口」を示してください。無理に教訓化しないでください。`,'日記のようなメモから使えます。'],
+['画像生成','記事からサムネ画像の指示文を作る','記事テーマを画像生成向けの具体的な指示にします。',`以下の記事内容をもとに、横長サムネイル画像を生成するための指示文を作ってください。
+
+【記事内容】
+ここに貼る
+
+【条件】
+・主題が一目で伝わる
+・文字は短いタイトルのみ
+・スマホの小さい表示でも認識しやすい
+・人物、背景、小物、表情、余白、画角を具体的に指定
+・ありがちなAI画像になりすぎない工夫を1つ提案`,'記事本文を貼ります。'],
+['日常・暮らし','複数候補を同じ条件で比較する','選択肢を同じ基準で比較し違いを見える化します。',`以下の候補を、私の条件に沿って比較してください。
+
+【候補】
+ここに入力
+【重視する条件】
+ここに入力
+
+比較軸を揃え、確認できる事実と評価を分けてください。不明な項目は推測せず「確認できません」としてください。`,'商品・サービス・旅行などに使えます。'],
+['SHORTS','/easy10','10歳でも分かる説明に。',`10歳の子どもでも理解できる言葉で説明してください。難しい言葉は避け、必要な専門用語はその場で意味を説明し、身近な具体例を1つ入れてください。`,'AI編集部独自SHORTS。'],
+['SHORTS','/gaps','不足情報・抜け漏れを洗い出す。',`現在の内容を確認し、判断・実行するうえで不足している情報、確認すべき事項、見落としている論点を洗い出してください。重要度の高い順に整理してください。`,'企画や提出物の確認に。'],
+['SHORTS','/pushback','あえて反対側から検証する。',`私の意見に迎合せず、反対の立場からも検討してください。前提の弱い点、想定される反論、見落としているリスクを具体的に指摘し、必要なら改善案も示してください。`,'自分の案を厳しく検証したいときに。'],
+['SHORTS','/facts','事実・推測・未確認を分ける。',`回答内容を「確認できる事実」「推測・仮定」「確認できないこと」に分けてください。確認できない内容を事実のように補完しないでください。`,'調査や重要判断に。'],
+['SHORTS','/3ways','方向性の違う3案を出す。',`同じ方向性の言い換えではなく、考え方やアプローチが異なる3つの案を出してください。それぞれの特徴と向いている場面も一言で示してください。`,'アイデア出しに。'],
+['SHORTS','/boss','上司・決裁者向けに整理する。',`上司・決裁者向けに、結論→理由→根拠となる数字・事実→判断してほしいこと、の順で簡潔に整理してください。`,'報告や説明のちょい足しに。']
+];
+const C=['すべて','仕事','子育て・学習','副業・SNS','画像生成','日常・暮らし','SHORTS'];let c='すべて';const g=document.querySelector('#grid'),q=document.querySelector('#q'),ts=document.querySelector('#tabs');
+function tabs(){ts.innerHTML=C.map(x=>`<button class="tab ${x===c?'active':''}" data-c="${x}">${x}</button>`).join('');ts.querySelectorAll('button').forEach(b=>b.onclick=()=>{c=b.dataset.c;tabs();render()})}
+function render(){let s=q.value.toLowerCase(),r=A.filter(x=>(c==='すべて'||x[0]===c)&&x.join(' ').toLowerCase().includes(s));count.textContent=r.length+'件';g.innerHTML=r.map(x=>`<article class="card" data-i="${A.indexOf(x)}"><span class="badge ${x[0]==='SHORTS'?'short':''}">${x[0]==='SHORTS'?'⚡ AI編集部 SHORTS':x[0]}</span><h3>${x[1]}</h3><p>${x[2]}</p></article>`).join('')||'<p>該当する指示文がありません。</p>';g.querySelectorAll('.card').forEach(e=>e.onclick=()=>openD(+e.dataset.i))}
+function openD(i){let x=A[i];body.innerHTML=`<span class="badge ${x[0]==='SHORTS'?'short':''}">${x[0]==='SHORTS'?'⚡ AI編集部 SHORTS':x[0]}</span><h2>${x[1]}</h2><p>${x[2]}</p><h3>✨ この指示文をコピーして使う</h3><div class="prompt" id="pt"></div><button class="copy" onclick="cp()">📋 プロンプトをコピー</button><div class="tip"><b>✏️ 使い方</b><br>${x[4]}</div>`;pt.textContent=x[3];detail.classList.add('on');document.body.style.overflow='hidden'}function closeD(){detail.classList.remove('on');document.body.style.overflow=''}async function cp(){try{await navigator.clipboard.writeText(pt.textContent)}catch(e){}document.querySelector('.copy').textContent='✓ コピーしました'}q.oninput=render;tabs();render();
+</script></body></html>
